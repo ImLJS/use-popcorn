@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const tempMovieData = [
   {
@@ -47,14 +47,40 @@ const tempWatchedData = [
   },
 ];
 
-const API_KEY = `${process.env.REACT_APP_OMDB_API_KEY}`
+const API_KEY = `${process.env.REACT_APP_OMDB_API_KEY}`;
 
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
 
 export default function App() {
-  const [movies, setMovies] = useState(tempMovieData);
-  const [watched, setWatched] = useState(tempWatchedData);
+  const [movies, setMovies] = useState([]);
+  const [watched, setWatched] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    async function fetchMovies() {
+      try {
+        setIsLoading(true);
+        const response = await fetch(
+          `http://www.omdbapi.com/?apikey=${API_KEY}&s=interstellar`
+        );
+
+        if (!response.ok) throw new Error("Something went wrong");
+
+        const data = await response.json();
+
+        if (data.Response === "False") throw new Error("Movie not Found");
+        setMovies(() => data.Search);
+      } catch (err) {
+        console.error(err.message);
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchMovies();
+  }, []);
 
   return (
     <>
@@ -64,7 +90,17 @@ export default function App() {
         <NumResults movies={movies} />
       </Navbar>
       <Main>
-        <Box element={<MovieList movies={movies} />} />
+        <Box
+          element={
+            isLoading ? (
+              <Loader />
+            ) : error ? (
+              <ErrorMessage message={setError} />
+            ) : (
+              <MovieList movies={movies} />
+            )
+          }
+        />
         <Box
           element={
             <>
@@ -75,6 +111,19 @@ export default function App() {
         />
       </Main>
     </>
+  );
+}
+
+function Loader() {
+  return <p className="loader">Loading...</p>;
+}
+
+function ErrorMessage({ message }) {
+  return (
+    <p className="error">
+      <span>🛑</span>
+      {message}
+    </p>
   );
 }
 
@@ -108,7 +157,7 @@ function Search() {
 function NumResults({ movies }) {
   return (
     <p className="num-results">
-      Found <strong>{movies.length}</strong> results
+      Found <strong>{movies.length ?? 0}</strong> results
     </p>
   );
 }
