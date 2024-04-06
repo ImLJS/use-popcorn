@@ -13,8 +13,6 @@ export default function App() {
   const [error, setError] = useState("");
   const [selectedId, setSelectedId] = useState(null);
 
-  const isWatched = watched.map((movie) => movie.imdbID).includes(selectedId);
-
   function handleSelectMovie(id) {
     setSelectedId((selectedId) => (id === selectedId ? null : id));
   }
@@ -212,7 +210,6 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
     Released: released,
     Actors: actors,
     Director: director,
-    Genre: genre,
   } = movie;
 
   function handleAdd() {
