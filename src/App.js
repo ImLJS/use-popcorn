@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import StarRating from "./StarRating";
 
 const API_KEY = `${process.env.REACT_APP_OMDB_API_KEY}`;
@@ -133,6 +133,12 @@ function Logo() {
 function Search({ onSearch }) {
   const [query, setQuery] = useState("");
 
+  const inputEl = useRef(null);
+
+  useEffect(function () {
+    inputEl.current.focus();
+  }, []);
+
   function handleSubmit(e) {
     e.preventDefault();
     onSearch(query);
@@ -147,6 +153,7 @@ function Search({ onSearch }) {
         placeholder="Search movies,tv shows..."
         value={query}
         onChange={(e) => setQuery(e.target.value)}
+        ref={inputEl}
       />
     </form>
   );
